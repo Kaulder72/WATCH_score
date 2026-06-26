@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WATCH Score — CLABSI Risk Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ===================== TOKENS ===================== */
+  :root{
+    --ink:#142433;
+    --ink-soft:#52606B;
+    --paper:#F6F7F4;
+    --raised:#FFFFFF;
+    --line:#DEE1D9;
+    --brand:#1D4E66;
+    --brand-soft:#E3ECEE;
+    --low:#3F7D5C;       --low-soft:#E5EFE9;
+    --moderate:#B8842B;  --moderate-soft:#F6EEDB;
+    --high:#A23B3B;      --high-soft:#F3E1DF;
+    --muted:#8C9298;     --muted-soft:#ECEDE9;
+
+    --tier-color:var(--muted);
+    --tier-soft:var(--muted-soft);
+
+    --serif:'Source Serif 4', Georgia, serif;
+    --sans:'IBM Plex Sans', -apple-system, sans-serif;
+    --mono:'IBM Plex Mono', 'SF Mono', monospace;
+
+    --radius:14px;
+    --radius-sm:8px;
+    --shadow:0 1px 2px rgba(20,36,51,0.04), 0 6px 20px rgba(20,36,51,0.05);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{display:block;}
+  a{color:var(--brand);}
+  h1,h2,h3{font-family:var(--serif); font-weight:600; margin:0; color:var(--ink);}
+  p{margin:0;}
+  ul{margin:0; padding:0; list-style:none;}
+  button{font-family:inherit;}
+
+  :focus-visible{outline:2px solid var(--brand); outline-offset:2px;}
+
+  .wrap{max-width:1120px; margin:0 auto; padding:0 28px;}
+
+  /* ===================== NAV ===================== */
+  .nav{
+    position:sticky; top:0; z-index:40;
+    background:rgba(246,247,244,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    height:64px;
+  }
+  .wordmark{
+    font-family:var(--mono); font-weight:600; letter-spacing:0.12em;
+    font-size:15px; color:var(--brand); text-decoration:none; white-space:nowrap;
+  }
+  .nav-links{display:flex; gap:28px; align-items:center;}
+  .nav-inner{flex-wrap:nowrap;}
+  .nav-links a{
+    font-size:14px; color:var(--ink-soft); text-decoration:none; font-weight:500;
+  }
+  .nav-links a:hover{color:var(--brand);}
+  .nav-tag{
+    font-family:var(--mono); font-size:11px; color:var(--muted);
+    border:1px solid var(--line); border-radius:20px; padding:4px 10px;
+  }
+
+  /* ===================== HERO ===================== */
+  .hero{padding:64px 0 40px; border-bottom:1px solid var(--line);}
+  .hero-eyebrow{
+    font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--brand); margin-bottom:14px; display:block;
+  }
+  .hero h1{font-size:44px; letter-spacing:-0.01em; margin-bottom:14px;}
+  .hero p.lead{
+    font-size:17px; color:var(--ink-soft); max-width:620px; margin-bottom:28px;
+  }
+  .chip-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .chip{
+    display:flex; align-items:center; gap:10px;
+    background:var(--raised); border:1px solid var(--line); border-radius:10px;
+    padding:8px 14px 8px 10px;
+  }
+  .chip-letter{
+    font-family:var(--mono); font-weight:600; font-size:14px;
+    width:24px; height:24px; border-radius:6px;
+    background:var(--brand-soft); color:var(--brand);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .chip-label{font-size:13px; color:var(--ink-soft);}
+
+  /* ===================== LAYOUT ===================== */
+  .calc-section{padding:48px 0 64px;}
+  .calc-grid{
+    display:grid; grid-template-columns:1.55fr 1fr; gap:28px; align-items:start;
+  }
+  .card{
+    background:var(--raised); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+
+  /* ---- input card ---- */
+  .input-card{padding:8px 32px 28px;}
+  .input-group{padding:24px 0; border-bottom:1px solid var(--line);}
+  .input-group:last-child{border-bottom:none;}
+  .group-label{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:14px; display:block;
+  }
+  .field-row{display:flex; gap:20px; flex-wrap:wrap;}
+  .field{flex:1 1 200px;}
+  .field label{
+    display:block; font-size:14px; font-weight:500; color:var(--ink); margin-bottom:8px;
+  }
+  .field-hint{font-size:12px; color:var(--muted); margin-top:6px; display:block;}
+  .input-unit{position:relative;}
+  .input-unit input{
+    width:100%; padding:12px 64px 12px 14px; border:1px solid var(--line); border-radius:var(--radius-sm);
+    font-family:var(--mono); font-size:15px; color:var(--ink); background:var(--paper);
+    transition:border-color .15s, background .15s;
+  }
+  .input-unit input:focus{border-color:var(--brand); background:var(--raised);}
+  .input-unit input::placeholder{color:#B7BCB6;}
+  .input-unit span.unit{
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    font-size:13px; color:var(--muted); font-family:var(--sans); pointer-events:none;
+  }
+
+  .toggle{display:inline-flex; border:1px solid var(--line); border-radius:var(--radius-sm); overflow:hidden;}
+  .toggle button{
+    border:none; background:var(--paper); color:var(--ink-soft); padding:11px 22px;
+    font-size:14px; font-weight:500; cursor:pointer; transition:background .15s, color .15s;
+  }
+  .toggle button + button{border-left:1px solid var(--line);}
+  .toggle button.active{background:var(--brand); color:#fff;}
+
+  .bmi-readout{
+    margin-top:18px; display:flex; align-items:center; justify-content:space-between;
+    background:var(--paper); border:1px dashed var(--line); border-radius:var(--radius-sm);
+    padding:12px 16px;
+  }
+  .bmi-readout .bmi-label{font-size:13px; color:var(--ink-soft);}
+  .bmi-readout .bmi-value{font-family:var(--mono); font-size:16px; font-weight:600; color:var(--brand);}
+
+  .reset-row{display:flex; justify-content:flex-end; padding-top:18px;}
+  .reset-btn{
+    background:none; border:none; color:var(--muted); font-size:13px; cursor:pointer;
+    text-decoration:underline; padding:4px;
+  }
+  .reset-btn:hover{color:var(--ink-soft);}
+
+  /* ---- result column ---- */
+  .result-col{display:flex; flex-direction:column; gap:18px; position:sticky; top:84px;}
+  .result-card{padding:28px;}
+  .result-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  .result-top .group-label{margin:0;}
+
+  .bead-strip{display:flex; gap:8px; margin-bottom:22px;}
+  .bead{
+    width:34px; height:34px; border-radius:50%; background:var(--muted-soft);
+    border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:11px; color:var(--muted); font-weight:600;
+    transition:background .2s, border-color .2s, color .2s;
+  }
+  .bead.on{background:var(--tier-color); border-color:var(--tier-color); color:#fff;}
+
+  .score-readout{display:flex; align-items:baseline; gap:6px; margin-bottom:10px;}
+  .score-number{font-family:var(--mono); font-size:64px; font-weight:600; color:var(--tier-color); line-height:1;}
+  .score-max{font-family:var(--mono); font-size:20px; color:var(--muted);}
+
+  .risk-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--mono); font-size:12px; letter-spacing:0.06em; text-transform:uppercase;
+    font-weight:600; color:var(--tier-color); background:var(--tier-soft);
+    border-radius:20px; padding:6px 14px; margin-bottom:6px;
+  }
+  .risk-badge::before{content:''; width:7px; height:7px; border-radius:50%; background:var(--tier-color);}
+
+  .rate-note{font-size:13px; color:var(--ink-soft); margin-top:10px;}
+  .rate-note strong{color:var(--ink); font-family:var(--mono);}
+
+  .breakdown{margin-top:22px; border-top:1px solid var(--line); padding-top:18px;}
+  .breakdown table{width:100%; border-collapse:collapse; font-size:13px;}
+  .breakdown th{
+    text-align:left; font-family:var(--mono); font-size:10px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--muted); padding-bottom:8px; font-weight:600;
+  }
+  .breakdown td{padding:7px 0; border-top:1px solid var(--line); color:var(--ink-soft); vertical-align:middle;}
+  .breakdown td.crit{color:var(--ink); font-weight:500;}
+  .breakdown td.val{font-family:var(--mono); white-space:nowrap;}
+  .pt-dot{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:20px; height:20px; border-radius:50%; border:1px solid var(--line);
+    font-size:11px; font-family:var(--mono); color:var(--muted); background:var(--paper);
+  }
+  .pt-dot.met{background:var(--tier-soft); color:var(--tier-color); border-color:var(--tier-color);}
+
+  .reco-card{padding:24px 26px; border-left:4px solid var(--tier-color);}
+  .reco-card h3{font-size:15px; font-family:var(--sans); font-weight:700; margin-bottom:4px;}
+  .reco-sub{font-size:12px; color:var(--muted); margin-bottom:14px; display:block;}
+  .reco-list li{
+    position:relative; padding-left:18px; margin-bottom:10px; font-size:14px; color:var(--ink-soft);
+  }
+  .reco-list li:last-child{margin-bottom:0;}
+  .reco-list li::before{
+    content:''; position:absolute; left:0; top:8px; width:6px; height:6px; border-radius:50%;
+    background:var(--tier-color);
+  }
+
+  /* ===================== ABOUT ===================== */
+  .about{padding:56px 0; border-top:1px solid var(--line);}
+  .section-head{margin-bottom:32px;}
+  .section-head .hero-eyebrow{margin-bottom:10px;}
+  .section-head h2{font-size:30px;}
+  .about-grid{display:grid; grid-template-columns:1.6fr 1fr; gap:40px;}
+  .about-body p{color:var(--ink-soft); margin-bottom:16px; font-size:15px;}
+  .about-body p:last-child{margin-bottom:0;}
+  .acronym-def{margin-top:22px; display:grid; gap:10px;}
+  .acronym-def .row{display:flex; gap:14px; align-items:baseline;}
+  .acronym-def .letter{font-family:var(--mono); font-weight:700; color:var(--brand); width:18px;}
+  .acronym-def .def{font-size:14px; color:var(--ink-soft);}
+  .acronym-def .def b{color:var(--ink); font-weight:600;}
+
+  .stat-card{padding:26px;}
+  .stat-card .group-label{margin-bottom:18px;}
+  .stat-row{display:flex; justify-content:space-between; padding:10px 0; border-top:1px solid var(--line); font-size:14px;}
+  .stat-row:first-of-type{border-top:none;}
+  .stat-row span:first-child{color:var(--ink-soft);}
+  .stat-row span:last-child{font-family:var(--mono); font-weight:600; color:var(--ink);}
+
+  /* ===================== EVIDENCE ===================== */
+  .evidence{padding:56px 0 72px; border-top:1px solid var(--line);}
+  .evidence-grid{display:grid; grid-template-columns:1.6fr 1fr; gap:28px; align-items:start;}
+  .citation-card{padding:30px 32px;}
+  .citation-text{
+    font-family:var(--serif); font-size:17px; line-height:1.65; color:var(--ink);
+    border-left:3px solid var(--brand); padding-left:20px; margin-bottom:22px;
+  }
+  .citation-meta{font-size:13px; color:var(--ink-soft); margin-bottom:22px;}
+  .citation-meta div{margin-bottom:4px;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    background:var(--brand); color:#fff; font-size:14px; font-weight:600;
+    padding:12px 20px; border-radius:var(--radius-sm); transition:background .15s;
+  }
+  .btn:hover{background:#163C4E;}
+  .btn-ghost{
+    background:none; border:1px solid var(--line); color:var(--ink-soft); margin-left:10px;
+  }
+  .btn-ghost:hover{background:var(--paper); color:var(--ink);}
+
+  .metrics-card{padding:26px;}
+  .metrics-card .group-label{margin-bottom:18px;}
+
+  .disclaimer{
+    margin-top:24px; font-size:13px; color:var(--muted); background:var(--muted-soft);
+    border-radius:var(--radius-sm); padding:14px 16px;
+  }
+
+  /* ===================== FOOTER ===================== */
+  footer{border-top:1px solid var(--line); padding:32px 0 48px;}
+  .footer-inner{display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px;}
+  .footer-inner p{font-size:13px; color:var(--muted); max-width:560px;}
+  .footer-wordmark{font-family:var(--mono); font-size:13px; color:var(--ink-soft); letter-spacing:0.08em;}
+
+  /* ===================== RESPONSIVE ===================== */
+  @media (max-width:880px){
+    .calc-grid, .about-grid, .evidence-grid{grid-template-columns:1fr;}
+    .result-col{position:static;}
+    .hero h1{font-size:34px;}
+    .input-card{padding:8px 20px 22px;}
+    .nav-tag{display:none;}
+    .nav-links{gap:16px;}
+    .wrap{padding:0 18px;}
+  }
+  @media (max-width:520px){
+    .nav-links a{font-size:13px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="wordmark" href="#top">WATCH SCORE</a>
+    <div class="nav-links">
+      <a href="#calculator">Calculator</a>
+      <a href="#about">About</a>
+      <a href="#evidence">Evidence</a>
+      <span class="nav-tag">Derivation cohort · n=250</span>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <span class="hero-eyebrow">CLABSI risk stratification</span>
+    <h1>WATCH Score</h1>
+    <p class="lead">A five-item bedside tool that predicts the risk of central line-associated bloodstream infection (CLABSI) in hemodialysis patients with a central dialysis catheter.</p>
+    <div class="chip-row">
+      <div class="chip"><span class="chip-letter">W</span><span class="chip-label">White blood cell count</span></div>
+      <div class="chip"><span class="chip-letter">A</span><span class="chip-label">Anemia</span></div>
+      <div class="chip"><span class="chip-letter">T</span><span class="chip-label">Tachycardia</span></div>
+      <div class="chip"><span class="chip-letter">C</span><span class="chip-label">Comorbid diabetes</span></div>
+      <div class="chip"><span class="chip-letter">H</span><span class="chip-label">High BMI</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="calc-section" id="calculator">
+    <div class="wrap calc-grid">
+
+      <!-- INPUT CARD -->
+      <div class="card input-card">
+
+        <div class="input-group">
+          <span class="group-label">Laboratory</span>
+          <div class="field-row">
+            <div class="field">
+              <label for="wbcInput">White blood cell count</label>
+              <div class="input-unit">
+                <input type="number" id="wbcInput" inputmode="decimal" step="0.01" min="0" placeholder="e.g. 9.20">
+                <span class="unit">×10³/µL</span>
+              </div>
+              <span class="field-hint">Enter using a decimal point, e.g. 9.20</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <span class="group-label">Vital sign</span>
+          <div class="field-row">
+            <div class="field">
+              <label for="hrInput">Heart rate</label>
+              <div class="input-unit">
+                <input type="number" id="hrInput" inputmode="decimal" step="0.1" min="0" placeholder="e.g. 78">
+                <span class="unit">bpm</span>
+              </div>
+              <span class="field-hint">Resting heart rate at assessment</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <span class="group-label">Comorbidities</span>
+          <div class="field-row">
+            <div class="field">
+              <label>Anemia</label>
+              <div class="toggle" id="anemiaGroup" role="group" aria-label="Anemia">
+                <button type="button" data-val="no" aria-pressed="false">No</button>
+                <button type="button" data-val="yes" aria-pressed="false">Yes</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Comorbid diabetes mellitus</label>
+              <div class="toggle" id="dmGroup" role="group" aria-label="Comorbid diabetes mellitus">
+                <button type="button" data-val="no" aria-pressed="false">No</button>
+                <button type="button" data-val="yes" aria-pressed="false">Yes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <span class="group-label">Body measurements</span>
+          <div class="field-row">
+            <div class="field">
+              <label for="weightInput">Body weight</label>
+              <div class="input-unit">
+                <input type="number" id="weightInput" inputmode="decimal" step="0.1" min="0" placeholder="e.g. 62.5">
+                <span class="unit">kg</span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="heightInput">Body height</label>
+              <div class="input-unit">
+                <input type="number" id="heightInput" inputmode="decimal" step="0.1" min="0" placeholder="e.g. 160">
+                <span class="unit">cm</span>
+              </div>
+            </div>
+          </div>
+          <div class="bmi-readout">
+            <span class="bmi-label">Body mass index (calculated automatically)</span>
+            <span class="bmi-value" id="bmiOutput">—</span>
+          </div>
+        </div>
+
+        <div class="reset-row">
+          <button class="reset-btn" id="resetBtn" type="button">Clear all fields</button>
+        </div>
+      </div>
+
+      <!-- RESULT COLUMN -->
+      <div class="result-col">
+        <div class="card result-card" id="resultCard">
+          <div class="result-top">
+            <span class="group-label">WATCH score</span>
+          </div>
+          <div class="bead-strip" id="beadStrip">
+            <span class="bead" data-key="wbc">W</span>
+            <span class="bead" data-key="anemia">A</span>
+            <span class="bead" data-key="hr">T</span>
+            <span class="bead" data-key="dm">C</span>
+            <span class="bead" data-key="bmi">H</span>
+          </div>
+          <div class="score-readout">
+            <span class="score-number" id="scoreNumber">–</span>
+            <span class="score-max">/ 5</span>
+          </div>
+          <span class="risk-badge" id="riskBadge">Enter all values</span>
+          <p class="rate-note" id="rateNote">Complete every field on the left to calculate the score.</p>
+
+          <div class="breakdown">
+            <table>
+              <thead>
+                <tr><th>Criterion</th><th>Value</th><th>Threshold</th><th>Point</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="crit">WBC count</td>
+                  <td class="val" id="row-wbc-val">—</td>
+                  <td>&gt; 10.58</td>
+                  <td><span class="pt-dot" id="row-wbc-pt">·</span></td>
+                </tr>
+                <tr>
+                  <td class="crit">Anemia</td>
+                  <td class="val" id="row-anemia-val">—</td>
+                  <td>present</td>
+                  <td><span class="pt-dot" id="row-anemia-pt">·</span></td>
+                </tr>
+                <tr>
+                  <td class="crit">Heart rate</td>
+                  <td class="val" id="row-hr-val">—</td>
+                  <td>&gt; 84.5</td>
+                  <td><span class="pt-dot" id="row-hr-pt">·</span></td>
+                </tr>
+                <tr>
+                  <td class="crit">Diabetes mellitus</td>
+                  <td class="val" id="row-dm-val">—</td>
+                  <td>present</td>
+                  <td><span class="pt-dot" id="row-dm-pt">·</span></td>
+                </tr>
+                <tr>
+                  <td class="crit">BMI (calculated)</td>
+                  <td class="val" id="row-bmi-val">—</td>
+                  <td>&gt; 22.59</td>
+                  <td><span class="pt-dot" id="row-bmi-pt">·</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card reco-card" id="recoCard">
+          <h3 id="recoTitle">Suggested actions</h3>
+          <span class="reco-sub" id="recoSub">Results will appear once the score is calculated.</span>
+          <ul class="reco-list" id="recoList">
+            <li>Fill in all fields to see tailored, easy-to-follow recommendations for this patient.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="hero-eyebrow">About the tool</span>
+        <h2>What the WATCH score does</h2>
+      </div>
+      <div class="about-grid">
+        <div class="about-body">
+          <p>Central venous catheters are commonly used for hemodialysis vascular access, but they carry a meaningful risk of central line-associated bloodstream infection (CLABSI). Current international guidelines recommend the same preventive bundle for every catheter patient, without a bedside way to tell which patients need closer attention.</p>
+          <p>The WATCH score was developed from a retrospective cohort of 250 hemodialysis patients with a central dialysis catheter, of whom 104 (41.6%) developed CLABSI. Five routinely available variables were combined into a simple additive score, where one point is given for each criterion that is met.</p>
+          <div class="acronym-def">
+            <div class="row"><span class="letter">W</span><span class="def"><b>W</b>hite blood cell count above 10.58 ×10³/µL</span></div>
+            <div class="row"><span class="letter">A</span><span class="def"><b>A</b>nemia present</span></div>
+            <div class="row"><span class="letter">T</span><span class="def"><b>T</b>achycardia — heart rate above 84.5 bpm</span></div>
+            <div class="row"><span class="letter">C</span><span class="def"><b>C</b>omorbid diabetes mellitus present</span></div>
+            <div class="row"><span class="letter">H</span><span class="def"><b>H</b>igh body mass index above 22.59 kg/m²</span></div>
+          </div>
+          <p>The resulting score (0–5) places a patient into a low, moderate, or high CLABSI-risk category, each linked to a simple set of suggested actions for catheter care and monitoring.</p>
+        </div>
+        <div class="card stat-card">
+          <span class="group-label">At a glance</span>
+          <div class="stat-row"><span>Patients (derivation cohort)</span><span>250</span></div>
+          <div class="stat-row"><span>CLABSI events</span><span>104 (41.6%)</span></div>
+          <div class="stat-row"><span>Predictors in final model</span><span>5</span></div>
+          <div class="stat-row"><span>Discrimination (AUC)</span><span>0.718</span></div>
+          <div class="stat-row"><span>Calibration (H–L test)</span><span>p = 0.295</span></div>
+          <div class="stat-row"><span>Study design</span><span>Retrospective cohort</span></div>
+          <div class="stat-row"><span>Setting</span><span>Indonesia, 2023–2025</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EVIDENCE -->
+  <section class="evidence" id="evidence">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="hero-eyebrow">Evidence</span>
+        <h2>Reference & methodology</h2>
+      </div>
+      <div class="evidence-grid">
+        <div class="card citation-card">
+          <p class="citation-text">Development and Validation of the Novel WATCH Score: A Five-Item Bedside Clinical Risk Score for Predicting Central Line-Associated Bloodstream Infection in Hemodialysis Patients with Central Dialysis Catheters.</p>
+          <div class="citation-meta">
+            <div>Sembiring YE, Aldian FM, Hartanto JO, Visuddho V, Tjempakasari A, Hakim AR, Dillon J, Huang J.</div>
+            <div>Faculty of Medicine, Universitas Airlangga / Dr. Soetomo General Academic Hospital, Surabaya, Indonesia.</div>
+            <div>Manuscript submitted for publication, 2026.</div>
+          </div>
+          <a class="btn" href="Manuscript_WATCH_score.pdf" target="_blank" rel="noopener" download>Read the full paper</a>
+          <a class="btn btn-ghost" href="mailto:yan-e-s@fk.unair.ac.id">Contact the authors</a>
+          <div class="disclaimer">This tool is intended to support, not replace, clinical judgment by trained healthcare professionals. It is derived from a single-center retrospective cohort and is pending external, multicenter validation before routine clinical implementation.</div>
+        </div>
+        <div class="card metrics-card">
+          <span class="group-label">Validation summary</span>
+          <div class="stat-row"><span>AUC (95% CI)</span><span>0.718 (0.657–0.779)</span></div>
+          <div class="stat-row"><span>Optimism-corrected AUC</span><span>0.688</span></div>
+          <div class="stat-row"><span>Internal validation</span><span>Bootstrap + 10-fold CV</span></div>
+          <div class="stat-row"><span>Low-risk score</span><span>0–1</span></div>
+          <div class="stat-row"><span>Moderate-risk score</span><span>2–3</span></div>
+          <div class="stat-row"><span>High-risk score</span><span>4–5</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <p>WATCH Score is a research tool developed at Universitas Airlangga and Dr. Soetomo General Academic Hospital, Surabaya, Indonesia. For educational and clinical decision-support use only.</p>
+    <span class="footer-wordmark">© 2026 WATCH SCORE</span>
+  </div>
+</footer>
+
+<script>
+  const THRESH = { wbc: 10.58, hr: 84.5, bmi: 22.59 };
+
+  const TIERS = {
+    none: { color: 'var(--muted)', soft: 'var(--muted-soft)' },
+    low: {
+      color: '#3F7D5C', soft: '#E5EFE9', label: 'Low risk', rate: '14.3%',
+      title: 'Low risk — routine care', sub: 'Suggested actions for a score of 0–1',
+      items: [
+        'Continue the standard catheter care bundle: routine dressing changes and antiseptic site care after every dialysis session.',
+        'Check the catheter exit site for redness, swelling, or discharge at each session.',
+        'Re-calculate this score at the next assessment, since risk can change over time.'
+      ]
+    },
+    moderate: {
+      color: '#B8842B', soft: '#F6EEDB', label: 'Moderate risk', rate: '37.2%',
+      title: 'Moderate risk — closer monitoring', sub: 'Suggested actions for a score of 2–3',
+      items: [
+        'Continue all routine catheter care steps, plus check the site at every session.',
+        'Report new fever, chills, or site tenderness to the care team immediately.',
+        'Work on optimizing blood sugar control and anemia management.',
+        'Discuss with the care team whether additional catheter-lock therapy is appropriate.'
+      ]
+    },
+    high: {
+      color: '#A23B3B', soft: '#F3E1DF', label: 'High risk', rate: '72.2%',
+      title: 'High risk — close clinical attention', sub: 'Suggested actions for a score of 4–5',
+      items: [
+        'Arrange clinician review before every dialysis session.',
+        'If fever or chills occur, obtain blood cultures and start empiric antibiotics promptly — do not wait.',
+        'Begin planning for a permanent vascular access (fistula or graft) to reduce long-term catheter dependence.',
+        'Consider early referral to an infectious disease specialist if infection is suspected.'
+      ]
+    }
+  };
+
+  const el = (id) => document.getElementById(id);
+  const wbcInput = el('wbcInput'), hrInput = el('hrInput'), weightInput = el('weightInput'), heightInput = el('heightInput');
+  const anemiaGroup = el('anemiaGroup'), dmGroup = el('dmGroup');
+  const bmiOutput = el('bmiOutput');
+  const resultCard = el('resultCard'), recoCard = el('recoCard');
+  const scoreNumber = el('scoreNumber'), riskBadge = el('riskBadge'), rateNote = el('rateNote');
+  const recoTitle = el('recoTitle'), recoSub = el('recoSub'), recoList = el('recoList');
+  const beads = document.querySelectorAll('.bead');
+
+  function setTierVars(target, color, soft){
+    target.style.setProperty('--tier-color', color);
+    target.style.setProperty('--tier-soft', soft);
+  }
+
+  function fmt(n, unit, digits){
+    return isNaN(n) ? '—' : n.toFixed(digits) + (unit ? ' ' + unit : '');
+  }
+
+  function setRow(key, valueText, point){
+    el('row-' + key + '-val').textContent = valueText;
+    const dot = el('row-' + key + '-pt');
+    if(point === null){
+      dot.textContent = '·'; dot.classList.remove('met');
+    } else {
+      dot.textContent = point; dot.classList.toggle('met', point === 1);
+    }
+  }
+
+  function calcBMI(w, h){
+    if(isNaN(w) || isNaN(h) || w <= 0 || h <= 0) return null;
+    const m = h / 100;
+    return w / (m * m);
+  }
+
+  function calculate(){
+    const wbc = parseFloat(wbcInput.value);
+    const hr = parseFloat(hrInput.value);
+    const weight = parseFloat(weightInput.value);
+    const height = parseFloat(heightInput.value);
+    const anemia = anemiaGroup.dataset.value || '';
+    const dm = dmGroup.dataset.value || '';
+
+    const bmi = calcBMI(weight, height);
+    bmiOutput.textContent = bmi !== null ? bmi.toFixed(1) + ' kg/m²' : '—';
+
+    const pts = {
+      wbc: isNaN(wbc) ? null : (wbc > THRESH.wbc ? 1 : 0),
+      anemia: anemia ? (anemia === 'yes' ? 1 : 0) : null,
+      hr: isNaN(hr) ? null : (hr > THRESH.hr ? 1 : 0),
+      dm: dm ? (dm === 'yes' ? 1 : 0) : null,
+      bmi: bmi === null ? null : (bmi > THRESH.bmi ? 1 : 0)
+    };
+
+    setRow('wbc', fmt(wbc, '×10³/µL', 2), pts.wbc);
+    setRow('anemia', anemia ? (anemia === 'yes' ? 'Yes' : 'No') : '—', pts.anemia);
+    setRow('hr', fmt(hr, 'bpm', 1), pts.hr);
+    setRow('dm', dm ? (dm === 'yes' ? 'Yes' : 'No') : '—', pts.dm);
+    setRow('bmi', bmi !== null ? bmi.toFixed(1) + ' kg/m²' : '—', pts.bmi);
+
+    beads.forEach(b => {
+      const k = b.dataset.key;
+      b.classList.toggle('on', pts[k] === 1);
+    });
+
+    const complete = Object.values(pts).every(v => v !== null);
+
+    if(!complete){
+      setTierVars(resultCard, TIERS.none.color, TIERS.none.soft);
+      setTierVars(recoCard, TIERS.none.color, TIERS.none.soft);
+      scoreNumber.textContent = '–';
+      riskBadge.textContent = 'Enter all values';
+      rateNote.textContent = 'Complete every field on the left to calculate the score.';
+      recoTitle.textContent = 'Suggested actions';
+      recoSub.textContent = 'Results will appear once the score is calculated.';
+      recoList.innerHTML = '<li>Fill in all fields to see tailored, easy-to-follow recommendations for this patient.</li>';
+      return;
+    }
+
+    const score = pts.wbc + pts.anemia + pts.hr + pts.dm + pts.bmi;
+    const tierKey = score <= 1 ? 'low' : score <= 3 ? 'moderate' : 'high';
+    const tier = TIERS[tierKey];
+
+    setTierVars(resultCard, tier.color, tier.soft);
+    setTierVars(recoCard, tier.color, tier.soft);
+
+    scoreNumber.textContent = score;
+    riskBadge.textContent = tier.label;
+    rateNote.innerHTML = 'Observed CLABSI rate at this risk level in the derivation cohort: <strong>' + tier.rate + '</strong>';
+
+    recoTitle.textContent = tier.title;
+    recoSub.textContent = tier.sub;
+    recoList.innerHTML = tier.items.map(i => '<li>' + i + '</li>').join('');
+  }
+
+  document.querySelectorAll('.toggle').forEach(group => {
+    group.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('button').forEach(b => { b.setAttribute('aria-pressed', 'false'); b.classList.remove('active'); });
+        btn.setAttribute('aria-pressed', 'true');
+        btn.classList.add('active');
+        group.dataset.value = btn.dataset.val;
+        calculate();
+      });
+    });
+  });
+
+  [wbcInput, hrInput, weightInput, heightInput].forEach(input => {
+    input.addEventListener('input', calculate);
+  });
+
+  el('resetBtn').addEventListener('click', () => {
+    [wbcInput, hrInput, weightInput, heightInput].forEach(i => i.value = '');
+    [anemiaGroup, dmGroup].forEach(g => {
+      g.dataset.value = '';
+      g.querySelectorAll('button').forEach(b => { b.setAttribute('aria-pressed', 'false'); b.classList.remove('active'); });
+    });
+    calculate();
+  });
+
+  calculate();
+</script>
+
+</body>
+</html>
