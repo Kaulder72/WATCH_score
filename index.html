@@ -248,12 +248,21 @@
   .evidence{padding:56px 0 72px; border-top:1px solid var(--line);}
   .evidence-grid{display:grid; grid-template-columns:1.6fr 1fr; gap:28px; align-items:start;}
   .citation-card{padding:30px 32px;}
+  .citation-card-full{padding:30px 32px;}
+  .citation-card-top{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    margin-bottom:18px; flex-wrap:wrap;
+  }
   .citation-text{
     font-family:var(--serif); font-size:17px; line-height:1.65; color:var(--ink);
     border-left:3px solid var(--brand); padding-left:20px; margin-bottom:22px;
   }
   .citation-meta{font-size:13px; color:var(--ink-soft); margin-bottom:22px;}
   .citation-meta div{margin-bottom:4px;}
+  .ref-list{
+    list-style:decimal; padding-left:20px; display:flex; flex-direction:column; gap:12px;
+  }
+  .ref-list li{font-size:13.5px; line-height:1.6; color:var(--ink-soft);}
   .btn{
     display:inline-flex; align-items:center; gap:8px; text-decoration:none;
     background:var(--brand); color:#fff; font-size:14px; font-weight:600;
@@ -272,6 +281,24 @@
     margin-top:24px; font-size:13px; color:var(--muted); background:var(--muted-soft);
     border-radius:var(--radius-sm); padding:14px 16px;
   }
+
+  /* ---- figure link rectangle (About section) ---- */
+  .figure-link{
+    margin-top:24px; display:flex; align-items:center; gap:16px;
+    background:var(--raised); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:20px 24px; text-decoration:none;
+    transition:border-color .15s, background .15s;
+  }
+  .figure-link:hover{border-color:var(--brand); background:var(--brand-soft);}
+  .figure-link-icon{
+    flex:0 0 auto; width:40px; height:40px; border-radius:10px;
+    background:var(--brand-soft); color:var(--brand);
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; font-weight:600;
+  }
+  .figure-link-text{display:flex; flex-direction:column; gap:3px;}
+  .figure-link-title{font-size:15px; font-weight:600; color:var(--ink);}
+  .figure-link-sub{font-size:13px; color:var(--ink-soft);}
 
   /* ===================== FOOTER ===================== */
   footer{border-top:1px solid var(--line); padding:32px 0 48px;}
@@ -487,12 +514,12 @@
   <section class="about" id="about">
     <div class="wrap">
       <div class="section-head">
-        <span class="hero-eyebrow">About the tool</span>
+        <span class="hero-eyebrow">About</span>
         <h2>What the WATCH score does</h2>
       </div>
       <div class="about-grid">
         <div class="about-body">
-          <p>Central venous catheters are commonly used for hemodialysis vascular access, but they carry a meaningful risk of central line-associated bloodstream infection (CLABSI). Current international guidelines recommend the same preventive bundle for every catheter patient, without a bedside way to tell which patients need closer attention.</p>
+          <p>Central venous catheters (CVC) are widely used for hemodialysis vascular access but carry a substantial risk of central line&#8211;associated bloodstream infection (CLABSI), a major cause of morbidity, mortality, and healthcare costs. Although current international guidelines recommend a standardized preventive care bundle for all patients with central venous catheters, they do not provide a practical bedside tool for identifying individuals at increased risk who may benefit from intensified preventive measures.</p>
           <p>The WATCH score was developed from a retrospective cohort of 250 hemodialysis patients with a central dialysis catheter, of whom 104 (41.6%) developed CLABSI. Five routinely available variables were combined into a simple additive score, where one point is given for each criterion that is met.</p>
           <div class="acronym-def">
             <div class="row"><span class="letter">W</span><span class="def"><b>W</b>hite blood cell count above 10.58 ×10³/µL</span></div>
@@ -504,7 +531,7 @@
           <p>The resulting score (0–5) places a patient into a low, moderate, or high CLABSI-risk category, each linked to a simple set of suggested actions for catheter care and monitoring.</p>
         </div>
         <div class="card stat-card">
-          <span class="group-label">At a glance</span>
+          <span class="group-label">Validation summary</span>
           <div class="stat-row"><span>Patients (derivation cohort)</span><span>250</span></div>
           <div class="stat-row"><span>CLABSI events</span><span>104 (41.6%)</span></div>
           <div class="stat-row"><span>Predictors in final model</span><span>5</span></div>
@@ -514,6 +541,13 @@
           <div class="stat-row"><span>Setting</span><span>Indonesia, 2023–2025</span></div>
         </div>
       </div>
+      <a class="figure-link" href="Final_Figure_WATCH_Score.png" target="_blank" rel="noopener">
+        <span class="figure-link-icon">&#8599;</span>
+        <span class="figure-link-text">
+          <span class="figure-link-title">View the WATCH Score summary figure</span>
+          <span class="figure-link-sub">Full scoring algorithm, risk groups, and clinical interpretation in one diagram</span>
+        </span>
+      </a>
     </div>
   </section>
 
@@ -524,27 +558,20 @@
         <span class="hero-eyebrow">Evidence</span>
         <h2>Reference & methodology</h2>
       </div>
-      <div class="evidence-grid">
-        <div class="card citation-card">
-          <p class="citation-text">Development and Validation of the Novel WATCH Score: A Five-Item Bedside Clinical Risk Score for Predicting Central Line-Associated Bloodstream Infection in Hemodialysis Patients with Central Dialysis Catheters.</p>
-          <div class="citation-meta">
-            <div>Sembiring YE, Aldian FM, Hartanto JO, Visuddho V, Tjempakasari A, Hakim AR, Dillon J, Huang J.</div>
-            <div>Faculty of Medicine, Universitas Airlangga / Dr. Soetomo General Academic Hospital, Surabaya, Indonesia.</div>
-            <div>Manuscript submitted for publication, 2026.</div>
-          </div>
-          <a class="btn" href="Manuscript_WATCH_score.pdf" target="_blank" rel="noopener" download>Read the full paper</a>
+      <div class="card citation-card citation-card-full">
+        <div class="citation-card-top">
+          <span class="group-label" style="margin:0;">Selected references</span>
           <a class="btn btn-ghost" href="mailto:yan-e-s@fk.unair.ac.id">Contact the authors</a>
-          <div class="disclaimer">This tool is intended to support, not replace, clinical judgment by trained healthcare professionals. It is derived from a single-center retrospective cohort and is pending external, multicenter validation before routine clinical implementation.</div>
         </div>
-        <div class="card metrics-card">
-          <span class="group-label">Validation summary</span>
-          <div class="stat-row"><span>AUC (95% CI)</span><span>0.718 (0.657–0.779)</span></div>
-          <div class="stat-row"><span>Optimism-corrected AUC</span><span>0.688</span></div>
-          <div class="stat-row"><span>Internal validation</span><span>Bootstrap + 10-fold CV</span></div>
-          <div class="stat-row"><span>Low-risk score</span><span>0–1</span></div>
-          <div class="stat-row"><span>Moderate-risk score</span><span>2–3</span></div>
-          <div class="stat-row"><span>High-risk score</span><span>4–5</span></div>
-        </div>
+        <ol class="ref-list">
+          <li>O&#8217;Grady NP. Guidelines for the Prevention of Intravascular Catheter-Related Infections (2011). 2011.</li>
+          <li>Ling ML, Apisarnthanarak A, Ching P, Chen YC, Harrington G, Huh JW, et al. APSIC revised guidelines for prevention of central line associated bloodstream infections (CLABSI): a summary and position statement. Antimicrob Steward Healthc Epidemiol. 2026 Feb 3;6(1):e39. doi:10.1017/ash.2026.10298 PubMed PMID: 41658317; PubMed Central PMCID: PMC12877909.</li>
+          <li>Practice Guidelines for Central Venous Access 2020: An Updated Report by the American Society of Anesthesiologists Task Force on Central Venous Access. Anesthesiology. 2020 Jan;132(1):8&#8211;43. doi:10.1097/ALN.0000000000002864 PubMed PMID: 31821240.</li>
+          <li>Buetti N, Marschall J, Drees M, Fakih MG, Hadaway L, Maragakis LL, et al. Strategies to prevent central line-associated bloodstream infections in acute-care hospitals: 2022 Update. Infection Control & Hospital Epidemiology. 2022 May;43(5):553&#8211;69. doi:10.1017/ice.2022.87</li>
+          <li>World Health Organization, editor. Guidelines for the prevention of bloodstream infections and other infections associated with the use of intravascular catheters: part 1: Peripheral catheters. Geneva: World Health Organization; 2024. 1 p.</li>
+          <li>Kusek L. Preventing Central Line-Associated Bloodstream Infections. Journal of Nursing Care Quality. 2012 Oct;27(4):283&#8211;7. doi:10.1097/NCQ.0b013e31825733d1</li>
+        </ol>
+        <div class="disclaimer">This tool is intended to support, not replace, clinical judgment by trained healthcare professionals. It is derived from a single-center retrospective cohort and is pending external, multicenter validation before routine clinical implementation.</div>
       </div>
     </div>
   </section>
